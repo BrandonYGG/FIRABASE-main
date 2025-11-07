@@ -1,0 +1,207 @@
+
+{
+  "entities": {
+    "Order": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Order",
+      "type": "object",
+      "description": "Represents a material order placed by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the order."
+        },
+        "applicantName": {
+          "type": "string",
+          "description": "Name of the person requesting the order."
+        },
+        "projectName": {
+          "type": "string",
+          "description": "Name of the construction project for which the order is placed."
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the construction project."
+        },
+        "minDeliveryDate": {
+          "type": "string",
+          "description": "Earliest acceptable delivery date.",
+          "format": "date-time"
+        },
+        "maxDeliveryDate": {
+          "type": "string",
+          "description": "Latest acceptable delivery date.",
+          "format": "date-time"
+        },
+        "paymentType": {
+          "type": "string",
+          "description": "Type of payment (Credit or Cash)."
+        },
+        "creditInstallmentType": {
+          "type": "string",
+          "description": "Installment type if payment is on credit (Weekly, Bi-Weekly, Monthly)."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Payment Method chosen by the user."
+        },
+        "orderDate": {
+          "type": "string",
+          "description": "Date when the order was registered.",
+          "format": "date-time"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User that created the order. (Relationship: User 1:N Order)"
+        },
+        "ineUrl": {
+          "type": "string",
+          "description": "URL of the uploaded INE document for credit applications.",
+          "format": "uri"
+        },
+        "comprobanteDomicilioUrl": {
+          "type": "string",
+          "description": "URL of the uploaded proof of address document for credit applications.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "applicantName",
+        "projectName",
+        "location",
+        "minDeliveryDate",
+        "maxDeliveryDate",
+        "paymentType",
+        "orderDate",
+        "userId"
+      ]
+    },
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User Profile",
+      "type": "object",
+      "description": "Represents a user's profile in the application.",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "User's email address."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User's display name."
+        },
+        "photoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the user's profile picture."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["personal", "company"],
+          "description": "The role of the user within the application."
+        },
+        "rfc": {
+          "type": "string",
+          "description": "RFC for company users."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number for company users."
+        }
+      },
+      "required": ["email", "role"]
+    },
+     "Notification": {
+      "title": "Notification",
+      "type": "object",
+      "description": "Represents a notification for a user about an order status change.",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "orderId": { "type": "string" },
+        "orderName": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "read": { "type": "boolean" }
+      },
+      "required": ["id", "userId", "orderId", "orderName", "message", "status", "createdAt", "read"]
+    },
+    "AdminNotification": {
+      "title": "Admin Notification",
+      "type": "object",
+      "description": "Represents a notification for an administrator about a new order.",
+      "properties": {
+        "id": { "type": "string" },
+        "orderId": { "type": "string" },
+        "orderName": { "type": "string" },
+        "userName": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "read": { "type": "boolean" }
+      },
+      "required": ["id", "orderId", "orderName", "userName", "message", "createdAt", "read"]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous",
+      "google.com"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Collection to store user profiles. Individual user documents are only accessible by the user themselves.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/pedidos/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Collection to store orders for a specific user. Orders are owned by the user identified by the userId path parameter.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who created the order."
+            },
+            {
+              "name": "orderId",
+              "description": "The unique identifier of the order."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/notifications/{notificationId}",
+        "definition": {
+          "entityName": "Notification",
+          "schema": { "$ref": "#/backend/entities/Notification" },
+          "description": "Subcollection to store notifications for a specific user."
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to address the \"Missing or insufficient permissions\" error by ensuring authorization independence and secure data access based on the user's authentication status. The structure is based on path-based ownership. This approach ensures that users can only access their own orders, addressing the error reported by NextJS.\n\n*   **Authorization Independence**: Achieved by storing orders under the `/users/{userId}/pedidos/{orderId}` path. This structure inherently links each order to a specific user, eliminating the need for `get()` calls to verify ownership.\n*   **QAPs (Rules are not Filters)**: The structure enables secure `list` operations by ensuring that users can only list orders associated with their own `userId`. The security rules can then enforce that only the authenticated user (`request.auth.uid`) can access the `/users/{userId}/pedidos` collection. This structure also helps to avoid unintended data exposure.\n\nThe `userId` field within each order document is redundant but strongly encouraged as a best practice for data integrity checks (e.g. to ensure the path `userId` and the document `userId` are the same value).\n"
+  },
+  "storage": {
+    "rules": "rules_version = '2';\nservice firebase.storage {\n  match /b/{bucket}/o {\n    match /profile-pictures/{userId}/{fileName} {\n      allow read;\n      allow write: if request.auth != null && request.auth.uid == userId;\n    }\n  }\n}"
+  }
+}

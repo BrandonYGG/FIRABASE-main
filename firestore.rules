@@ -1,0 +1,54 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      // This is insecure, but necessary for the demo to work without custom claims.
+      // In a real app, you would set a custom claim 'role' to 'admin' via a backend function.
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /users/{userId} {
+      // An admin can read any user profile.
+      // A user can only read their own profile.
+      allow get: if isOwner(userId) || isAdmin();
+      
+      // Only admins can list all users.
+      allow list: if isAdmin();
+
+      // A user can create their own profile document.
+      allow create: if isOwner(userId);
+      
+      // An admin can update any user profile.
+      // A user can update their own profile, but cannot change their own role.
+      allow update: if (isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin();
+    }
+
+    match /users/{userId}/pedidos/{orderId} {
+      // Admins can read/write/delete any order.
+      // Users can only read/write/delete their own orders.
+      allow read, write, delete: if isOwner(userId) || isAdmin();
+      allow list: if isOwner(userId) || isAdmin();
+    }
+    
+    // This rule allows an admin to query across all 'pedidos' subcollections.
+    match /{path=**}/pedidos/{pedido} {
+      allow list: if isAdmin();
+    }
+
+    // Rules for notifications
+    match /users/{userId}/notifications/{notificationId} {
+      // Admins can create notifications (when updating order status)
+      // Users can read/update (mark as read) their own notifications.
+      allow read, update, list: if isOwner(userId);
+      allow create: if isAdmin();
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+  }
+}

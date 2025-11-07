@@ -1,0 +1,16 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero-construction",
+      "description": "Un trabajador de la construcción supervisando una obra.",
+      "imageUrl": "https://plus.unsplash.com/premium_photo-1681691912442-68c4179c530c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=871",
+      "imageHint": "construction site"
+    },
+    {
+      "id": "ai-workspace",
+      "description": "A robot hand and a human hand about to touch, symbolizing the collaboration between AI and humans.",
+      "imageUrl": "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1032",
+      "imageHint": "ai collaboration"
+    }
+  ]
+}
