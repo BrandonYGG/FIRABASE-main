@@ -11,3 +11,5 @@ export default function AdminDashboardPage() {
         </div>
     );
 }
+
+// Prueba final de sincronización de Git
