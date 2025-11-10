@@ -5,7 +5,7 @@ export default function AdminDashboardPage() {
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold font-headline tracking-tight">
-                Panel de Administrador
+                Panel del admin
             </h1>
             <AdminDashboard />
         </div>
