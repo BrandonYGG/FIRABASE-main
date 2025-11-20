@@ -28,7 +28,7 @@ export default function Header() {
         <div className="mr-4 flex">
           <Link href="/" className="flex items-center space-x-2">
             <Construction className="h-6 w-6 text-primary" />
-            <span className="font-bold font-headline">OrderFlow Construct</span>
+            <span className="font-bold font-headline">Tlapaleria los Pinos</span>
           </Link>
         </div>
         <nav className="ml-auto hidden md:flex items-center space-x-2">
